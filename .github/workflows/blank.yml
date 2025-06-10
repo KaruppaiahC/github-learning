@@ -1,0 +1,42 @@
+name: Terraform Build
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout main repo (equivalent to 'self')
+      - name: Checkout r1-azinfra (main repo)
+        uses: actions/checkout@v4
+
+      # Checkout the r1-tfmodules repo
+      - name: Checkout r1-tfmodules
+        uses: actions/checkout@v4
+        with:
+          repository: Infrastructure/r1-tfmodules
+          path: r1-tfmodules
+          token: ${{ secrets.GITHUB_TOKEN }}  # or use a PAT if needed
+
+      # Create artifact staging directory
+      - name: Create staging directory
+        run: mkdir -p artifact/r1-azinfra artifact/r1-tfmodules
+
+      # Copy r1-azinfra contents (main repo) into staging
+      - name: Copy r1-azinfra to staging
+        run: cp -r ./* artifact/r1-azinfra/
+
+      # Copy r1-tfmodules contents into staging
+      - name: Copy r1-tfmodules to staging
+        run: cp -r r1-tfmodules/* artifact/r1-tfmodules/
+
+      # Upload artifacts
+      - name: Upload Terraform Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform
+          path: artifact/
